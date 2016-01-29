@@ -8,7 +8,7 @@ import time_utils
 
 class zabbixtools:
     def __init__(self):
-        self.url = "http://123.56.22.43/zabbix/api_jsonrpc.php"
+        self.url = "http://xxxx/zabbix/api_jsonrpc.php"
         self.header = {"Content-Type": "application/json"}
         self.authID = self.user_login()
 	#self.argv = sys.argv[1]
@@ -18,8 +18,8 @@ class zabbixtools:
                     "jsonrpc": "2.0",
                     "method": "user.login",
                     "params": {
-                        "user": "admin",
-                        "password": "airport453"
+                        "user": "xxxx",
+                        "password": "xxxx"
                         },
                     "id": 0
                     })
