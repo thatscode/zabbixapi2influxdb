@@ -6,10 +6,10 @@ from influxdb import InfluxDBClient
 
 
 def write_in(zabbix_data_format):
-    host = '106.185.31.193'
+    host = 'xxxx'
     port = 8086
     user = 'root'
-    password = 'zxt98w1981'
+    password = 'xxxx'
     dbname = 'zabbixtest'
     # 需要优化,此处每写一次都需要建立influxdb的连接,效率太低.
     client = InfluxDBClient(host, port, user, password, dbname)
