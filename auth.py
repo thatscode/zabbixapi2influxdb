@@ -3,6 +3,9 @@
 import json
 import urllib2
 import sys
+import writeInfluxDB
+import time_utils
+
 class zabbixtools:
     def __init__(self):
         self.url = "http://123.56.22.43/zabbix/api_jsonrpc.php"
@@ -146,17 +149,38 @@ class zabbixtools:
                     history['measurement'] = 'real_stats_auth'
                     history.pop('ns')
                     history.pop("itemid")
-                    str(history).decode('utf8')
-                    print history
+                    # str(history).decode('utf8')
+                    return history
                     #print "\t","Host_id:",host['hostid'],"\t","Host_Name:",host['name'].encode('utf-8')
                 print
         else:
             print "Get Host_id Error,please check !"
+    def writeData(self):
+        # format data here
+        zabbix_data = self.history_get()
+        zabbix_data_format = [
+            {'fields': {
+                'value': int(zabbix_data.get('value'))
+                },
+                'tags': {
+                    'host': zabbix_data.get('host'),
+                    'site': zabbix_data.get('site'),
+                    'region': zabbix_data.get('region'),
+                    'type': zabbix_data.get('type')
+                },
+                'time': time_utils.epoch_to_datetime(int(zabbix_data.get('clock'))),
+                'measurement': zabbix_data.get('measurement')
+                }
+        ]
+        print zabbix_data.get('measurement')
+        #writeInfluxDB.write_in(zabbix_data_format)
+        #print time_utils.epoch_to_datetime(int(zabbix_data.get('clock')))
 def main():
     test = zabbixtools()
     #test.hostgroup_get()
     #test.hostid_get()
     #test.itemid_get()
-    test.history_get()
+    #test.history_get()
+    test.writeData()
 if __name__ == "__main__":
     main()
