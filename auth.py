@@ -11,7 +11,8 @@ class zabbixtools:
         self.url = "http://xxxx/zabbix/api_jsonrpc.php"
         self.header = {"Content-Type": "application/json"}
         self.authID = self.user_login()
-	#self.argv = sys.argv[1]
+        self.template = self.itemid_get()
+	    #self.argv = sys.argv[1]
     def user_login(self):
         data = json.dumps(
                 {
@@ -23,9 +24,9 @@ class zabbixtools:
                         },
                     "id": 0
                     })
-        request = urllib2.Request(self.url,data)
+        request = urllib2.Request(self.url, data)
         for key in self.header:
-            request.add_header(key,self.header[key])
+            request.add_header(key, self.header[key])
         try:
             result = urllib2.urlopen(request)
         except URLError as e:
@@ -76,24 +77,32 @@ class zabbixtools:
         else:
             print "Get HostGroup Error,please check !"
     def hostid_get(self):
-        data = json.dumps(
-                {
-                    "jsonrpc": "2.0",
-                    "method": "host.get",
-                    "params": {
-                        "output": "extend",
-                        },
-                    "auth": self.authID,
-                    "id": 1,
-                    })
+        hostid = []
+        for i in self.template:
+            hostid.append(i["hostid"])
+            data = json.dumps(
+                    {
+                        "jsonrpc": "2.0",
+                        "method": "host.get",
+                        "params": {
+                            # "output": "extend",
+                            "output": ["host", "hostid", "name", "group"],
+                            "filter": {
+                                "hostid": hostid
+                            }
+                            },
+                        "auth": self.authID,
+                        "id": 1,
+                        })
         res = self.get_data(data)
         if 'result' in res.keys():
             res = res['result']
             if (res !=0) or (len(res) != 0):
-                print "\033[1;32;40m%s\033[0m" % "Host_id: ", "\033[1;31;40m%d\033[0m" % len(res)
-                for host in res:
-                    print "\t","Host_id:",host['hostid'],"\t","Host_Name:",host['name'].encode('utf-8')
-                print
+            #     # print "\033[1;32;40m%s\033[0m" % "Host_id: ", "\033[1;31;40m%d\033[0m" % len(res)
+            #     # for host in res:
+            #         # print "\t","Host_id:",host['hostid'],"\t","Host_Name:",host['name'].encode('utf-8')
+            #         print host
+                return res
         else:
             print "Get Host_id Error,please check !"
     def itemid_get(self):
@@ -102,9 +111,12 @@ class zabbixtools:
                     "jsonrpc": "2.0",
                     "method": "item.get",
                     "params": {
-                        "output": "extend",
-                        #"output":["itemids","key_","hostid","templateid"],
-                        "host":"nanjingAC"
+                        # "output": "extend",
+                        "output":["itemids", "key_", "hostid", "templateid", "name"],
+                        # "host":"nanjing",
+                        "filter": {
+                            "templateid": 30301
+                        },
                         },
                     "auth": self.authID,
                     "id": 1,
@@ -112,12 +124,13 @@ class zabbixtools:
         res = self.get_data(data)
         if 'result' in res.keys():
             res = res['result']
-            if (res !=0) or (len(res) != 0):
-                print "\033[1;32;40m%s\033[0m" % "Itemids: ", "\033[1;31;40m%d\033[0m" % len(res)
-                for itemid in res:
-                    print itemid
+            return res
+            # if (res !=0) or (len(res) != 0):
+            #     print "\033[1;32;40m%s\033[0m" % "Itemids: ", "\033[1;31;40m%d\033[0m" % len(res)
+            #     for itemid in res:
+            #         print itemid
                     #print "\t","Host_id:",host['hostid'],"\t","Host_Name:",host['name'].encode('utf-8')
-                print
+                # print
         else:
             print "Get Host_id Error,please check !"
     def history_get(self):
@@ -174,13 +187,13 @@ class zabbixtools:
         ]
         print zabbix_data.get('measurement')
         #writeInfluxDB.write_in(zabbix_data_format)
-        #print time_utils.epoch_to_datetime(int(zabbix_data.get('clock')))
+        print time_utils.epoch_to_datetime(int(zabbix_data.get('clock')))
 def main():
     test = zabbixtools()
     #test.hostgroup_get()
-    #test.hostid_get()
-    #test.itemid_get()
+    test.hostid_get()
+    test.itemid_get()
     #test.history_get()
-    test.writeData()
+    # test.writeData()
 if __name__ == "__main__":
     main()
